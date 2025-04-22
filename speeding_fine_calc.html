@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Калкулатор за глоби при превишена скорост</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: url('https://i.imgur.com/sBa02m1.png') no-repeat center center fixed;
+      background-size: contain;
+      background-color: #1a1a1a;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      color: #000;
+    }
+
+    h2 {
+      text-align: center;
+      color: #d9534f;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #c9302c;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🚓 Калкулатор за глоби при превишена скорост</h2>
+
+    <label for="vehicleType">Категория МПС:</label>
+    <select id="vehicleType" onchange="updateSpeedLimit()">
+      <option value="car">🚗 Лек автомобил</option>
+      <option value="motorcycle">🏍 Мотоциклет</option>
+      <option value="truck">🚚 Товарен автомобил / автобус</option>
+    </select>
+
+    <label for="roadType">Тип път:</label>
+    <select id="roadType" onchange="updateSpeedLimit()">
+      <option value="urban">Населено място</option>
+      <option value="non-urban">Извън населено място</option>
+      <option value="highway">Магистрала</option>
+    </select>
+
+    <label for="limit">Разрешена скорост (км/ч):</label>
+    <input type="number" id="limit" placeholder="Пример: 50" />
+
+    <label for="actual">Реално измерена скорост (км/ч):</label>
+    <input type="number" id="actual" placeholder="Пример: 95" />
+
+    <button onclick="calculateFine()">Изчисли глобата</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function updateSpeedLimit() {
+      const vehicleType = document.getElementById("vehicleType").value;
+      const roadType = document.getElementById("roadType").value;
+      const limitInput = document.getElementById("limit");
+
+      const speedLimits = {
+        car: { urban: 50, "non-urban": 90, highway: 140 },
+        motorcycle: { urban: 50, "non-urban": 80, highway: 120 },
+        truck: { urban: 50, "non-urban": 80, highway: 100 }
+      };
+
+      const speed = speedLimits[vehicleType][roadType];
+      limitInput.value = speed;
+    }
+
+    function calculateFine() {
+      const limit = parseInt(document.getElementById("limit").value);
+      const actual = parseInt(document.getElementById("actual").value);
+      const resultEl = document.getElementById("result");
+
+      if (isNaN(limit) || isNaN(actual) || actual <= limit) {
+        resultEl.textContent = "Моля, въведи валидни стойности – реалната скорост трябва да е по-висока от разрешената.";
+        return;
+      }
+
+      const overSpeed = actual - limit;
+      let fine = 0;
+      let penalty = "";
+
+      if (overSpeed <= 10) {
+        fine = 20;
+      } else if (overSpeed <= 20) {
+        fine = 50;
+      } else if (overSpeed <= 30) {
+        fine = 100;
+      } else if (overSpeed <= 40) {
+        fine = 400;
+      } else if (overSpeed <= 50) {
+        fine = 600;
+      } else {
+        const extraSteps = Math.floor((overSpeed - 50) / 5);
+        const additionalFine = extraSteps * 50;
+        fine = 700 + additionalFine;
+        penalty = "⛔ Лишаване от книжка за 3 месеца.";
+      }
+
+      resultEl.innerHTML = `📈 Превишение: ${overSpeed} км/ч<br>💸 Глоба: ${fine} лв.` + (penalty ? `<br>${penalty}` : "");
+    }
+  </script>
+</body>
+</html>
